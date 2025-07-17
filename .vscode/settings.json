@@ -1,5 +1,7 @@
 {
 	"files.associations": {
-		"stdlib.h": "c"
+		"stdlib.h": "c",
+		"errno.h": "c",
+		"string.h": "c"
 	}
 }
