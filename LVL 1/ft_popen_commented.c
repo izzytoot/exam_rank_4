@@ -100,7 +100,7 @@ int main ()
     if (fd_ls == -1 || fd_grep == -1)
         return (1);
     while ((bytes_read = read(fd_ls, buffer, sizeof(buffer))) > 0)
-        write(1, buffer, bytes_read);
+        write(fd_grep, buffer, bytes_read);
     close(fd_grep);
     close(fd_ls);
     return (0);
