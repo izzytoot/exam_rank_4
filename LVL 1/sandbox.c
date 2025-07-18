@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <stdbool.h>
 
-void alarm_hand(int sig)
+void alarm_handler(int sig)
 {
 	(void)sig;
 }
@@ -15,13 +15,10 @@ void alarm_hand(int sig)
 int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 {
 	struct sigaction sa;
-	sa.sa_handler = alarm_hand;
+	sa.sa_handler = alarm_handler;
 	sa.sa_flags = 0;
 	if (sigaction(SIGALRM, &sa, NULL) < 0)
 		return (-1);
-	
-	int status;
-	int sig;
 
 	pid_t pid;
 	pid = fork();
@@ -33,6 +30,7 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 		exit(0);
 	}
 
+	int status;
 	alarm(timeout);
 	if (waitpid(pid, &status, 0) == -1)
 	{
@@ -46,7 +44,7 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 		}
 		return (-1);
 	}
-
+	
 	if (WIFEXITED(status))
 	{
 		if (WEXITSTATUS(status) == 0)
@@ -61,6 +59,7 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 				printf("Bad function: exited with code %d\n", WEXITSTATUS(status));
 			return (0);
 		}
+		return (-1);
 	}
 
 	if (WIFSIGNALED(status))
@@ -77,24 +76,24 @@ void nice_ft()
 	return ;
 }
 
-void bad_ft_exit()
+void badf_exit()
 {
-	exit(1);
+	exit(2);
 }
 
-void bad_ft_segfault()
+void badf_segf()
 {
 	char *str = NULL;
-	str[1] = 'a';
+	str[2] = 'a';
 }
 
-void bad_ft_timout()
+void badf_timout()
 {
 	while(1)
 		;
 }
 
-void bad_ft_sig()
+void badf_sig()
 {
 	sleep(5);
 }
@@ -102,16 +101,15 @@ void bad_ft_sig()
 int main()
 {
 	int res;
-
 	res = sandbox(nice_ft, 5, true);
-	printf("Result is %d\n", res);
-	res = sandbox(bad_ft_exit, 5, true);
-	printf("Result is %d\n", res);
-	res = sandbox(bad_ft_segfault, 5, true);
-	printf("Result is %d\n", res);
-	res = sandbox(bad_ft_timout, 2, true);
-	printf("Result is %d\n", res);
-	res = sandbox(bad_ft_sig, 2, true);
-	printf("Result is %d\n", res);
+	printf("Res is %d\n", res);
+	res = sandbox(badf_exit, 5, true);
+	printf("Res is %d\n", res);
+	res = sandbox(badf_segf, 5, true);
+	printf("Res is %d\n", res);
+	res = sandbox(badf_timout, 2, true);
+	printf("Res is %d\n", res);
+	res = sandbox(badf_sig, 2, true);
+	printf("Res is %d\n", res);
 	return (0);
 }

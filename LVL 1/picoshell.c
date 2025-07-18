@@ -3,17 +3,15 @@
 #include <sys/wait.h>
 #include <stdio.h>
 
-int    picoshell(char **cmds[])
+int picoshell(char **cmds[])
 {
 	int fd[2];
-	int pid;
+	pid_t pid;
 	int status;
-	int fd_std = 0;
 	int res = 0;
+	int std_in = 0;
 	int i = -1;
 
-	if (!cmds)
-		return (1);
 	while(cmds[++i])
 	{
 		if (cmds[i + 1])
@@ -28,15 +26,7 @@ int    picoshell(char **cmds[])
 		}
 		pid = fork();
 		if (pid == -1)
-		{
-			if (fd[0] != -1)
-				close(fd[0]);
-			if (fd[1] != -1)
-				close(fd[1]);
-			if (fd_std != 0)
-				close(fd_std);
-			return (-1);
-		}
+			return (1);
 		if (pid == 0)
 		{
 			if (fd[1] != -1)
@@ -46,44 +36,42 @@ int    picoshell(char **cmds[])
 				close(fd[0]);
 				close(fd[1]);
 			}
-			if (fd_std != 0)
+			if (std_in != 0)
 			{
-				if (dup2(fd_std, 0) == -1)
+				if (dup2(std_in, 0) == -1)
 					exit(1);
-				close(fd_std);
+				close(std_in);
 			}
 			execvp(cmds[i][0], cmds[i]);
 			exit(1);
 		}
 		if (fd[1] != -1)
 			close(fd[1]);
-		if (fd_std != 0)
-			close(fd_std);
-		fd_std = fd[0];
+		if (std_in != 0)
+			close(std_in);
+		std_in = fd[0];
 	}
-	while (wait(&status) > 0)
+	while(wait(&status) > 0)
 	{
-		if (WIFEXITED(status) && (WEXITSTATUS(status) != 0))
+		if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
 			res = 1;
-		else if(!WIFEXITED(status))
+		else if (!WIFEXITED(status))
 			res = 1;
 	}
-	return (res);
-
+	return (0);
 }
 
-int	main(void)
+int main()
 {
 	char *cmd1[] = {"echo", "banana", NULL};
 	char *cmd2[] = {"cat", NULL};
-	char *cmd3[] = {"sed", "s/a/v/g", NULL};
+	char *cmd3[] = {"sed", "s/a/u/g", NULL};
 	char **cmds[] = {cmd1, cmd2, cmd3, NULL};
-	int res;
+	int res = picoshell(cmds);
 
-	res = picoshell(cmds);
 	if (res)
-		printf("Pico failure!\n");
+		printf("Pico failed :(\n");
 	else
-		printf("Pico success\n");
+		printf("Pico succeeded :)\n");
 	return (0);
 }
