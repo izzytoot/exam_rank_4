@@ -1,5 +1,3 @@
-//This file is given at the exam
-
 #include <stdio.h>
 #include <malloc.h>
 #include <ctype.h>
@@ -98,4 +96,5 @@ int main(int argc, char **argv)
         return (1);
     printf("%d\n", eval_tree(tree));
     destroy_tree(tree);
+	return (0);
 }
