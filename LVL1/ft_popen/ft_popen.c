@@ -24,13 +24,13 @@ int ft_popen(const char *file, char *const argv[], char type)
 			if (dup2(fd[1], 1) == -1)
 				exit(1);
 		}
-		else
+		if (type == 'w')
 		{
 			if (dup2(fd[0], 0) == -1)
 				exit(1);
 		}
-		close(fd[0]);
 		close(fd[1]);
+		close(fd[0]);
 		execvp(file, argv);
 		exit(1);
 	}
@@ -46,18 +46,18 @@ int ft_popen(const char *file, char *const argv[], char type)
 	}
 }
 
-int	main(void)
+int main()
 {
-	int fd_ls = ft_popen("ls", (char *const[]){"ls", NULL}, 'r');
-	int fd_grep = ft_popen("grep", (char *const[]){"grep", "pop", NULL}, 'w');
+	int	fd_ls = ft_popen("ls", (char *const[]){"ls", NULL}, 'r');
+	int fd_grep = ft_popen("grep", (char *const[]){"grep", "p", NULL}, 'w');
 	char buffer[1024];
 	int bytes;
 
 	if (fd_ls == -1 || fd_grep == -1)
 		return (1);
-	while((bytes = read(fd_ls, buffer, 1024)) > 0)
+	while ((bytes = read(fd_ls, buffer, 1024)) > 0)
 		write(fd_grep, buffer, bytes);
-	close(fd_ls);
 	close(fd_grep);
-	return (0);
+	close(fd_ls);
+	return (0);	
 }

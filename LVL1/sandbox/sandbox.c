@@ -1,13 +1,13 @@
 #include <unistd.h>
 #include <sys/wait.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <stdbool.h>
+#include <signal.h>
 
-void alarm_handler(int sig)
+void	alarm_handler(int sig)
 {
 	(void)sig;
 }
@@ -17,9 +17,10 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 	struct sigaction sa;
 	sa.sa_handler = alarm_handler;
 	sa.sa_flags = 0;
-	if (sigaction(SIGALRM, &sa, NULL) < 0)
+	if (sigaction(SIGALRM, &sa, 0) < 0)
 		return (-1);
 
+	int status;
 	pid_t pid;
 	pid = fork();
 	if (pid == -1)
@@ -30,7 +31,6 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 		exit(0);
 	}
 
-	int status;
 	alarm(timeout);
 	if (waitpid(pid, &status, 0) == -1)
 	{
@@ -44,13 +44,13 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 		}
 		return (-1);
 	}
-	
+
 	if (WIFEXITED(status))
 	{
 		if (WEXITSTATUS(status) == 0)
 		{
 			if (verbose)
-				printf("Nice function!\n");
+				printf("Nice function\n");
 			return (1);
 		}
 		else
@@ -59,7 +59,6 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 				printf("Bad function: exited with code %d\n", WEXITSTATUS(status));
 			return (0);
 		}
-		return (-1);
 	}
 
 	if (WIFSIGNALED(status))
@@ -76,24 +75,24 @@ void nice_ft()
 	return ;
 }
 
-void badf_exit()
+void bad_ft_exit()
 {
-	exit(2);
+	exit(1);
 }
 
-void badf_segf()
+void bad_ft_segfault()
 {
 	char *str = NULL;
 	str[2] = 'a';
 }
 
-void badf_timout()
+void bad_ft_timeout()
 {
 	while(1)
 		;
 }
 
-void badf_sig()
+void bad_ft_sigkill()
 {
 	sleep(5);
 }
@@ -101,15 +100,15 @@ void badf_sig()
 int main()
 {
 	int res;
+
 	res = sandbox(nice_ft, 5, true);
-	printf("Res is %d\n", res);
-	res = sandbox(badf_exit, 5, true);
-	printf("Res is %d\n", res);
-	res = sandbox(badf_segf, 5, true);
-	printf("Res is %d\n", res);
-	res = sandbox(badf_timout, 2, true);
-	printf("Res is %d\n", res);
-	res = sandbox(badf_sig, 2, true);
-	printf("Res is %d\n", res);
-	return (0);
+	printf("res is %d\n", res);
+	res = sandbox(bad_ft_exit, 5, true);
+	printf("res is %d\n", res);
+	res = sandbox(bad_ft_segfault, 5, true);
+	printf("res is %d\n", res);
+	res = sandbox(bad_ft_timeout, 2, true);
+	printf("res is %d\n", res);
+	res = sandbox(bad_ft_sigkill, 2, true);
+	printf("res is %d\n", res);
 }
