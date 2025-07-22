@@ -7,10 +7,10 @@ int    picoshell(char **cmds[])
 {
 	int fd[2];
 	pid_t pid;
-	int res = 0;
 	int status;
-	int fd_stdin = 0;
+	int fdstdin = 0;
 	int i = -1;
+	int res = 0;
 
 	if (!cmds)
 		return (1);
@@ -19,7 +19,7 @@ int    picoshell(char **cmds[])
 		if (cmds[i + 1])
 		{
 			if (pipe(fd) == -1)
-				return (-1);
+				return (1);
 		}
 		else
 		{
@@ -29,12 +29,22 @@ int    picoshell(char **cmds[])
 		pid = fork();
 		if (pid == -1)
 		{
-			close(fd[0]);
-			close(fd[1]);
+			if (fd[0] != -1)
+				close(fd[0]);
+			if (fd[1] != -1)
+				close(fd[1]);
+			if (fdstdin != 0)
+				close(fdstdin);
 			return (1);
 		}
 		if (pid == 0)
 		{
+			if (fdstdin != 0)
+			{
+				if (dup2(fdstdin, 0) == -1)
+					exit(1);
+				close(fdstdin);
+			}
 			if (fd[1] != -1)
 			{
 				if (dup2(fd[1], 1) == -1)
@@ -42,26 +52,18 @@ int    picoshell(char **cmds[])
 				close(fd[0]);
 				close(fd[1]);
 			}
-			if (fd_stdin != 0)
-			{
-				if (dup2(fd_stdin, 0) == -1)
-					exit(1);
-				close(fd_stdin);
-			}
 			execvp(cmds[i][0], cmds[i]);
 			exit(1);
 		}
 		if (fd[1] != -1)
 			close(fd[1]);
-		if (fd_stdin != 0)
-			close(fd_stdin);
-		fd_stdin = fd[0];
+		if (fdstdin != 0)
+			close(fdstdin);
+		fdstdin = fd[0];
 	}
 	while(wait(&status) > 0)
 	{
-		if (WIFEXITED(status) && (WEXITSTATUS(status) != 0))
-			res = 1;
-		else if (!WIFEXITED(status))
+		if (!WIFEXITED(status) || (WIFEXITED(status) && (WEXITSTATUS(status) != 0)))			
 			res = 1;
 	}
 	return (res);
@@ -77,8 +79,8 @@ int	main()
 
 	res = picoshell(cmds);
 	if (res)
-		printf("Pico failure :(");
+		printf("Pico failure :(\n");
 	else
-		printf("Pico success :)");
-	return (0);	
+		printf("Pico success :)\n");
+	return (0);
 }

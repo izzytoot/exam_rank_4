@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <signal.h>
 
-void	alarm_handler(int sig)
+void alarm_handler(int sig)
 {
 	(void)sig;
 }
@@ -15,22 +15,21 @@ void	alarm_handler(int sig)
 int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 {
 	struct sigaction sa;
-	sa.sa_handler = alarm_handler;
 	sa.sa_flags = 0;
-	if (sigaction(SIGALRM, &sa, 0) < 0)
+	sa.sa_handler = alarm_handler;
+	if (sigaction(SIGALRM, &sa, NULL) < 0)
 		return (-1);
 
-	int status;
 	pid_t pid;
+	int status;
 	pid = fork();
 	if (pid == -1)
 		return (-1);
 	if (pid == 0)
 	{
 		f();
-		exit(0);
+		exit (0);
 	}
-
 	alarm(timeout);
 	if (waitpid(pid, &status, 0) == -1)
 	{
@@ -44,7 +43,6 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 		}
 		return (-1);
 	}
-
 	if (WIFEXITED(status))
 	{
 		if (WEXITSTATUS(status) == 0)
@@ -60,7 +58,6 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 			return (0);
 		}
 	}
-
 	if (WIFSIGNALED(status))
 	{
 		if (verbose)
@@ -77,7 +74,7 @@ void nice_ft()
 
 void bad_ft_exit()
 {
-	exit(1);
+	exit (1);
 }
 
 void bad_ft_segfault()
@@ -88,7 +85,7 @@ void bad_ft_segfault()
 
 void bad_ft_timeout()
 {
-	while(1)
+	while (1)
 		;
 }
 

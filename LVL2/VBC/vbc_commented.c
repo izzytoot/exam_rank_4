@@ -211,7 +211,7 @@ int main(int argc, char **argv)
 	if (argc != 2)
         return (1);
 	if (ch_balance(argv[1]) == -1) //added //if -1, too many )
-		return (printf("Unexpected token ')'"), 1); //added
+		return (printf("Unexpected token ')'\n"), 1); //added
 	tree = parse_add(&input); //changed argv[1] to &input
 	if (!tree)
         return (1);
