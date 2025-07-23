@@ -26,7 +26,7 @@ void    unexpected(char c)
     if (c)
         printf("Unexpected token '%c'\n", c);
     else
-        printf("Unexpected end of input\n");
+        printf("Unexpected end of file\n");
 }
 
 int	ch_balance(char *s)
@@ -38,26 +38,36 @@ int	ch_balance(char *s)
 	{
 		if (s[i] == '(')
 			bal++;
-		else if (s[i] == ')')
+		else if(s[i] == ')')
 		{
 			bal--;
 			if (bal < 0)
+			{
+				unexpected(')');
 				return (-1);
+			}
 		}
 	}
-	return (bal);
+	if (bal != 0)
+	{
+		unexpected ('(');
+		return (-1);
+	}
+	return (0);
 }
 
 node *parse_nb_or_group(char **s)
 {
-	node *res = NULL;
+	node *res;
 	node tmp;
 
-	if (**s == '(')
+	if(**s == '(')
 	{
 		(*s)++;
 		res = parse_add(s);
-		if (!res || **s != ')')
+		if(!res)
+			return (NULL);
+		else if (**s != ')')
 		{
 			unexpected(**s);
 			destroy_tree(res);
@@ -71,11 +81,6 @@ node *parse_nb_or_group(char **s)
 		tmp.type = VAL;
 		tmp.val = **s - '0';
 		res = new_node(tmp);
-		if (!res)
-		{
-			destroy_tree(res);
-			return (NULL);
-		}
 		(*s)++;
 		return (res);
 	}
@@ -92,7 +97,7 @@ node *parse_mult(char **s)
 	l = parse_nb_or_group(s);
 	if (!l)
 		return (NULL);
-	while(**s == '*')
+	while (**s == '*')
 	{
 		(*s)++;
 		r = parse_nb_or_group(s);
@@ -120,7 +125,7 @@ node *parse_add(char **s)
 	l = parse_mult(s);
 	if (!l)
 		return (NULL);
-	while (**s == '+')
+	while(**s == '+')
 	{
 		(*s)++;
 		r = parse_mult(s);
@@ -154,15 +159,14 @@ int eval_tree(node *tree)
 
 int main(int argc, char **argv)
 {
-	char *input = argv[1];
-	node *tree;
-    if (argc != 2)
+	if (argc != 2)
         return (1);
-    if (ch_balance(input) == -1)
-		return (printf("Unexpected token ')'\n"), 1);
-	tree = parse_add(&input);
-	if (!tree)
+	char *input = argv[1];
+	if (ch_balance(input) == -1)
 		return (1);
+    node *tree = parse_add(&input);
+	if (!tree)
+        return (1);
 	if (*input)
 	{
 		unexpected(*input);

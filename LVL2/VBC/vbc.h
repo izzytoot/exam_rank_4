@@ -1,5 +1,5 @@
-#ifndef VDC_H
-# define VDC_H
+#ifndef VBC_H
+# define VBC_H
 
 #include <stdio.h>
 #include <malloc.h>
@@ -19,7 +19,7 @@ typedef struct node {
 node    *new_node(node n);
 void    destroy_tree(node *n);
 void    unexpected(char c);
-int		eval_tree(node *tree);
+int 	eval_tree(node *tree);
 int		ch_balance(char *s);
 node	*parse_nb_or_group(char **s);
 node	*parse_mult(char **s);

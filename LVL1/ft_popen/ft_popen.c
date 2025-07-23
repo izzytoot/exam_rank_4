@@ -10,7 +10,7 @@ int ft_popen(const char *file, char *const argv[], char type)
 		return (-1);
 	if (pipe(fd) == -1)
 		return (-1);
-	pid = fork();
+	pid = fork ();
 	if (pid == -1)
 	{
 		close(fd[0]);
@@ -44,16 +44,17 @@ int ft_popen(const char *file, char *const argv[], char type)
 		close(fd[0]);
 		return (fd[1]);
 	}
+
 }
 
 int main()
 {
 	int fd_ls = ft_popen("ls", (char *const[]){"ls", NULL}, 'r');
-	int fd_grep = ft_popen("grep", (char *const[]){"grep", "a", NULL}, 'w');
+	int fd_grep = ft_popen("grep", (char *const[]){"grep", "o", NULL}, 'w');
 	char buffer[1024];
 	int bytes;
 
-	if (fd_ls == -1 || fd_grep == -1)
+	if (fd_grep == -1 || fd_ls == -1)
 		return (1);
 	while((bytes = read(fd_ls, buffer, 1024)) > 0)
 		write(fd_grep, buffer, bytes);
