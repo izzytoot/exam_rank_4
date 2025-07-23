@@ -29,24 +29,6 @@ void    unexpected(char c)
         printf("Unexpected end of input\n");
 }
 
-int accept(char **s, char c)
-{
-    if (**s)
-    {
-        (*s)++;
-        return (1);
-    }
-    return (0);
-}
-
-int expect(char **s, char c)
-{
-    if (accept(s, c))
-        return (1);
-    unexpected(**s);
-    return (0);
-}
-
 int	ch_balance(char *s)
 {
 	int bal = 0;
@@ -63,12 +45,12 @@ int	ch_balance(char *s)
 				return (-1);
 		}
 	}
-	return(bal);
+	return (bal);
 }
 
 node *parse_nb_or_group(char **s)
 {
-	node *res;
+	node *res = NULL;
 	node tmp;
 
 	if (**s == '(')
@@ -77,8 +59,8 @@ node *parse_nb_or_group(char **s)
 		res = parse_add(s);
 		if (!res || **s != ')')
 		{
-			destroy_tree(res);
 			unexpected(**s);
+			destroy_tree(res);
 			return (NULL);
 		}
 		(*s)++;
@@ -87,10 +69,13 @@ node *parse_nb_or_group(char **s)
 	if (isdigit(**s))
 	{
 		tmp.type = VAL;
-		tmp.val = (**s) - '0';
+		tmp.val = **s - '0';
 		res = new_node(tmp);
 		if (!res)
+		{
+			destroy_tree(res);
 			return (NULL);
+		}
 		(*s)++;
 		return (res);
 	}
@@ -135,7 +120,7 @@ node *parse_add(char **s)
 	l = parse_mult(s);
 	if (!l)
 		return (NULL);
-	while(**s == '+')
+	while (**s == '+')
 	{
 		(*s)++;
 		r = parse_mult(s);
@@ -170,20 +155,20 @@ int eval_tree(node *tree)
 int main(int argc, char **argv)
 {
 	char *input = argv[1];
-
+	node *tree;
     if (argc != 2)
         return (1);
-	if (ch_balance(argv[1]) == -1)
-		return(printf("Unexpected token '('\n"), 1);
-    node *tree = parse_add(&input);
-    if (!tree)
-        return (1);
+    if (ch_balance(input) == -1)
+		return (printf("Unexpected token ')'\n"), 1);
+	tree = parse_add(&input);
+	if (!tree)
+		return (1);
 	if (*input)
 	{
-		printf("Unexpected token '%c'\n", *input);
+		unexpected(*input);
 		destroy_tree(tree);
 		return (1);
-	}	
+	}
     printf("%d\n", eval_tree(tree));
     destroy_tree(tree);
 	return (0);
