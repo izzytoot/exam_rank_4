@@ -195,6 +195,8 @@ int parser(json *dst, FILE *stream)
 
 int		argo(json *dst, FILE *stream)
 {
+	if (!dst || !stream)
+		return (-1);
 	if (parser(dst, stream) == -1)
 		return (-1);
 	return (1);
