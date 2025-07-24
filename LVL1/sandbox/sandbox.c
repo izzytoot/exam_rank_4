@@ -1,27 +1,28 @@
 #include <unistd.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <signal.h>
-#include <sys/wait.h>
-#include <errno.h>
-#include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <sys/wait.h>
+#include <string.h>
+#include <signal.h>
 
-void	alarm_handler(int sig)
+void alarm_handler(int sig)
 {
 	(void)sig;
 }
 
 int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 {
+	pid_t pid;
+	int status;
+
 	struct sigaction sa;
-	sa.sa_handler = alarm_handler;
 	sa.sa_flags = 0;
+	sa.sa_handler = alarm_handler;
 	if (sigaction(SIGALRM, &sa, NULL) < 0)
 		return (-1);
 	
-	pid_t pid;
-	int status;
 	pid = fork();
 	if (pid == -1)
 		return (-1);
@@ -30,6 +31,7 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 		f();
 		exit(0);
 	}
+
 	alarm(timeout);
 	if (waitpid(pid, &status, 0) == -1)
 	{
@@ -49,13 +51,13 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 		if (WEXITSTATUS(status) == 0)
 		{
 			if (verbose)
-				printf("Nice function\n");
+				printf("Nice function!\n");
 			return (1);
 		}
 		else
 		{
 			if (verbose)
-				printf("Bad function: exited with code %d\n", WEXITSTATUS(status));
+				printf("Bad function: exited with exit code %d\n", WEXITSTATUS(status));
 			return (0);
 		}
 	}
@@ -96,18 +98,19 @@ void bad_ft_sig()
 	sleep(5);
 }
 
-int main ()
+int main()
 {
-	int res;
+	int r;
 
-	res = sandbox(nice_ft, 5, true);
-	printf("res is %d\n", res);
-	res = sandbox(bad_ft_exit, 5, true);
-	printf("res is %d\n", res);
-	res = sandbox(bad_ft_segfault, 5, true);
-	printf("res is %d\n", res);
-	res = sandbox(bad_ft_timeout, 2, true);
-	printf("res is %d\n", res);
-	res = sandbox(bad_ft_sig, 2, true);
-	printf("res is %d\n", res);
+	r = sandbox(nice_ft, 5, true);
+	printf("res is %d\n", r);
+	r = sandbox(bad_ft_exit, 5, true);
+	printf("res is %d\n", r);
+	r = sandbox(bad_ft_segfault, 5, true);
+	printf("res is %d\n", r);
+	r = sandbox(bad_ft_timeout, 2, true);
+	printf("res is %d\n", r);
+	r = sandbox(bad_ft_sig, 2, true);
+	printf("res is %d\n", r);
+	return (0);
 }

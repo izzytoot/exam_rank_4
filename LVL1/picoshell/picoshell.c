@@ -1,16 +1,16 @@
 #include <unistd.h>
 #include <stdlib.h>
-#include <sys/wait.h>
 #include <stdio.h>
+#include <sys/wait.h>
 
 int    picoshell(char **cmds[])
 {
 	int fd[2];
 	pid_t pid;
-	int i = -1;
 	int status;
 	int fdstd = 0;
 	int res = 0;
+	int i = -1;
 
 	while(cmds[++i])
 	{
@@ -27,12 +27,9 @@ int    picoshell(char **cmds[])
 		pid = fork();
 		if (pid == -1)
 		{
-			if (fd[0] != -1)
-				close(fd[0]);
-			if (fd[1] != -1)
-				close(fd[1]);
-			if (fdstd != 0)
-				close(fdstd);
+			close(fd[0]);
+			close(fd[1]);
+			close(fdstd);
 			return (1);
 		}
 		if (pid == 0)
@@ -73,12 +70,11 @@ int main()
 	char *cmd2[] = {"cat", NULL};
 	char *cmd3[] = {"sed", "s/a/u/g", NULL};
 	char **cmds[] = {cmd1, cmd2, cmd3, NULL};
-	int res;
+	int r = picoshell(cmds);
 
-	res = picoshell(cmds);
-	if (res)
-		printf("Pico failure :(\n");
+	if (r)
+		printf("pico failure :(\n");
 	else
-		printf("Pico success\n");
+		printf("pico success :)\n");
 	return (0);
 }

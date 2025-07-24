@@ -1,16 +1,17 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+
 int ft_popen(const char *file, char *const argv[], char type)
 {
 	int fd[2];
 	__pid_t pid;
 
-	if (!file || !argv || (type != 'r' && type != 'w'))
+	if (!file || !argv || (type == 'r' && type == 'w'))
 		return (-1);
-	if (pipe(fd) == -1)
+	if (pipe(fd))
 		return (-1);
-	pid = fork ();
+	pid = fork();
 	if (pid == -1)
 	{
 		close(fd[0]);
@@ -44,21 +45,22 @@ int ft_popen(const char *file, char *const argv[], char type)
 		close(fd[0]);
 		return (fd[1]);
 	}
-
 }
 
-int main()
+int main ()
 {
-	int fd_ls = ft_popen("ls", (char *const[]){"ls", NULL}, 'r');
-	int fd_grep = ft_popen("grep", (char *const[]){"grep", "o", NULL}, 'w');
-	char buffer[1024];
-	int bytes;
+    int fd_ls;
+    int fd_grep;
+    char buffer[1024];
+    int bytes_read;
 
-	if (fd_grep == -1 || fd_ls == -1)
-		return (1);
-	while((bytes = read(fd_ls, buffer, 1024)) > 0)
-		write(fd_grep, buffer, bytes);
-	close(fd_ls);
-	close(fd_grep);
-	return (0);
+    fd_ls = ft_popen("ls", (char *const[]){"ls", NULL}, 'r');
+    fd_grep = ft_popen("grep", (char *const[]){"grep", "o", NULL}, 'w');
+    if (fd_ls == -1 || fd_grep == -1)
+        return (1);
+    while ((bytes_read = read(fd_ls, buffer, sizeof(buffer))) > 0)
+        write(fd_grep, buffer, bytes_read);
+    close(fd_grep);
+    close(fd_ls);
+    return (0);
 }

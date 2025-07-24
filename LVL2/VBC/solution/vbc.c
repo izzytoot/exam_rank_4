@@ -34,11 +34,11 @@ int	ch_balance(char *s)
 	int bal = 0;
 	int i = -1;
 
-	while(s[++i])
+	while (s[++i])
 	{
 		if (s[i] == '(')
 			bal++;
-		else if(s[i] == ')')
+		if (s[i] == ')')
 		{
 			bal--;
 			if (bal < 0)
@@ -50,10 +50,11 @@ int	ch_balance(char *s)
 	}
 	if (bal != 0)
 	{
-		unexpected ('(');
+		unexpected('(');
 		return (-1);
 	}
 	return (0);
+	
 }
 
 node *parse_nb_or_group(char **s)
@@ -61,26 +62,27 @@ node *parse_nb_or_group(char **s)
 	node *res;
 	node tmp;
 
-	if(**s == '(')
+	if (**s == '(')
 	{
 		(*s)++;
 		res = parse_add(s);
-		if(!res)
+		if (!res)
 			return (NULL);
 		else if (**s != ')')
 		{
 			unexpected(**s);
-			destroy_tree(res);
 			return (NULL);
 		}
 		(*s)++;
-		return (res);
+		return(res);
 	}
 	if (isdigit(**s))
 	{
-		tmp.type = VAL;
+		tmp.type =VAL;
 		tmp.val = **s - '0';
 		res = new_node(tmp);
+		if (!res)
+			return (NULL);
 		(*s)++;
 		return (res);
 	}
@@ -139,10 +141,11 @@ node *parse_add(char **s)
 		tmp.r = r;
 		l = new_node(tmp);
 		if (!l)
-			return (NULL);
+			return(NULL);
 	}
 	return (l);
 }
+
 
 int eval_tree(node *tree)
 {
@@ -159,19 +162,20 @@ int eval_tree(node *tree)
 
 int main(int argc, char **argv)
 {
-	if (argc != 2)
-        return (1);
+    if (argc != 2)
+		return (1);
 	char *input = argv[1];
+	
 	if (ch_balance(input) == -1)
 		return (1);
-    node *tree = parse_add(&input);
-	if (!tree)
-        return (1);
+    node *tree;
+	tree = parse_add(&input);
+    if (!tree)
+		return (1);
 	if (*input)
 	{
 		unexpected(*input);
-		destroy_tree(tree);
-		return (1);
+		return (-1);
 	}
     printf("%d\n", eval_tree(tree));
     destroy_tree(tree);
