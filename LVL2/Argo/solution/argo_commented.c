@@ -54,99 +54,107 @@ void	unexpected(FILE *stream)
 }
 
 //given
+// peeks next char and consumes (moves forward)
 int	accept(FILE *stream, char c)
 {
-	if (peek(stream) == c)
+	if (peek(stream) == c) //read next char
 	{
-		(void)getc(stream);
+		(void)getc(stream); //advance
 		return 1;
 	}
 	return 0;
 }
 
 //given
+// accepts and, if error, prints error message
 int	expect(FILE *stream, char c)
 {
-	if (accept(stream, c))
+	if (accept(stream, c)) //if next char is c -> good!
 		return 1;
-	unexpected(stream);
+	unexpected(stream); //print error
 	return 0;
 }
 
 //added
+//parses an interger and stores it in the AST
 int parse_int(json *dst, FILE *stream)
 {
 	int n = 0;
 
-	fscanf(stream, "%d", &n);
-	dst->type = INTEGER;
-	dst->integer = n;
+	fscanf(stream, "%d", &n); //scans input (stream) according to format ("%d") and changes n to strem
+	dst->type = INTEGER; //attributes type
+	dst->integer = n; //atributes value
 	return (1);
 }
 
 //added
+// parses a string that starts with '"' (str[0])
 char *get_str(FILE *stream)
 {
 	char *res = calloc(4096, sizeof(char));
 	int i = 0;
-	char c = getc(stream);
+	char c = getc(stream); //gets 1st char (str[0])
 
-	while (1)
+	while (1) //loop until "
 	{
 		c = getc(stream);
 
-		if (c == '"')
+		if (c == '"') //if it sees the last " it stops
 			break;
-		if (c == EOF)
+		if (c == EOF) //if it finds EOF it prints error and stops
 		{
-			unexpected(stream);
-			return (NULL);
+			unexpected(stream); //prints error
+			return (NULL); //returns null
 		}
 		if (c == '\\')
-			c = getc(stream);
-		res[i++] = c;
+			c = getc(stream); //if it finds a '\' it ignores it and gets the next char
+		res[i++] = c; //copies the str char by char into res
 	}
 	return (res);
 }
 
 //added
 int	parse_map(json *dst, FILE *stream)
-{
+{ 
+	//define type and init size and data
 	dst->type = MAP;
 	dst->map.size = 0;
 	dst->map.data = NULL;
-	char c = getc(stream);
+	char c = getc(stream); //get {
 
-	if (peek(stream) == '}')
+	if (peek(stream) == '}') //empty map
 		return (1);
 	
-	while (1)
+	while (1) //loop until }
 	{
-		c = peek(stream);
-		if (c != '"')
+		c = peek(stream); //move passed {
+		if (c != '"') //the key always starts with a "
 		{
-			unexpected(stream);
-			return (-1);
+			unexpected(stream); //prints error
+			return (-1); //returns -1 for error
 		}
+		//reallocate memory for data each loop round (map.size+1*sizeof(pair))
 		dst->map.data = realloc(dst->map.data, (dst->map.size + 1) * sizeof(pair));
-		pair *curr = &dst->map.data[dst->map.size];
-		curr->key = get_str(stream);
+		pair *curr = &dst->map.data[dst->map.size]; //initiate a new pair at map.size
+		curr->key = get_str(stream); //key is 1st str - get_str
 		if (!curr->key)
 			return (-1);
-		dst->map.size++;
-		if (expect(stream, ':') == 0)
+		if (expect(stream, ':') == 0) //if not : - error
 			return (-1);
-		if (argo(&curr->value, stream) == -1)
-			return (-1);
+		if (argo(&curr->value, stream) == -1) //call argo to parse the value
+			return (-1); //if -1 return error
+		dst->map.size++; //increment size
+		
+		//after each pair...
 		c = peek(stream);
-		if (c == '}')
+		if (c == '}') //if } ->break
 		{
 			accept(stream, c);
 			break;
 		}
-		if (c == ',')
+		if (c == ',') //if , we go again
 			accept(stream, ',');
-		else
+		else //error
 		{
 			unexpected(stream);
 			return (-1);
@@ -158,28 +166,28 @@ int	parse_map(json *dst, FILE *stream)
 //added
 int parser(json *dst, FILE *stream)
 {
-	int c = peek(stream);
+	int c = peek(stream); //look at next char and decide
 
-	if (c == EOF)
+	if (c == EOF) //if EOF - print and error
 	{
 		unexpected(stream);
 		return (-1);
 	}
 	if (isdigit(c)) //if number - parse int
 		return (parse_int(dst, stream));
-	else if (c == '"') //if string - get str
+	else if (c == '"') //if string - define and get str
 	{
 		dst->type = STRING;
 		dst->string = get_str(stream);
-		if (dst->string == NULL)
+		if (!dst->string)
 			return (-1);
-		return (-1);
+		return (1);
 	}
 	else if (c == '{') //if map - parse map
 		return (parse_map(dst, stream));
-	else
+	else //error
 	{
-		unexpected(stream);
+		unexpected(stream); //print error
 		return (-1);
 	}
 	return (1);
