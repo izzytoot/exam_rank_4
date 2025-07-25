@@ -26,35 +26,29 @@ void    unexpected(char c)
     if (c)
         printf("Unexpected token '%c'\n", c);
     else
-        printf("Unexpected end of file\n");
+        printf("Unexpected end of input\n");
 }
 
-int	ch_balance(char *s)
+int ch_balance(char *s)
 {
-	int bal = 0;
+	int n = 0;
 	int i = -1;
 
 	while (s[++i])
 	{
 		if (s[i] == '(')
-			bal++;
-		if (s[i] == ')')
+			n++;
+		else if (s[i] == ')')
 		{
-			bal--;
-			if (bal < 0)
-			{
-				unexpected(')');
-				return (-1);
-			}
+			n--;
+			if (n < 0)
+				return (printf("Unexpected token ')'\n"), -1);
 		}
 	}
-	if (bal != 0)
-	{
-		unexpected('(');
-		return (-1);
-	}
-	return (0);
-	
+	if (n != 0)
+		return (printf("Unexpected token '('\n"), -1);
+	else
+		return (0);
 }
 
 node *parse_nb_or_group(char **s)
@@ -68,23 +62,24 @@ node *parse_nb_or_group(char **s)
 		res = parse_add(s);
 		if (!res)
 			return (NULL);
-		else if (**s != ')')
+		if (**s != ')')
 		{
+			destroy_tree(res);
 			unexpected(**s);
 			return (NULL);
 		}
 		(*s)++;
-		return(res);
+		return (res);
 	}
 	if (isdigit(**s))
 	{
-		tmp.type =VAL;
+		tmp.type = VAL;
 		tmp.val = **s - '0';
 		res = new_node(tmp);
 		if (!res)
 			return (NULL);
 		(*s)++;
-		return (res);
+		return(res);
 	}
 	unexpected(**s);
 	return (NULL);
@@ -127,7 +122,7 @@ node *parse_add(char **s)
 	l = parse_mult(s);
 	if (!l)
 		return (NULL);
-	while(**s == '+')
+	while (**s == '+')
 	{
 		(*s)++;
 		r = parse_mult(s);
@@ -141,11 +136,10 @@ node *parse_add(char **s)
 		tmp.r = r;
 		l = new_node(tmp);
 		if (!l)
-			return(NULL);
+			return (NULL);
 	}
 	return (l);
 }
-
 
 int eval_tree(node *tree)
 {
@@ -163,21 +157,26 @@ int eval_tree(node *tree)
 int main(int argc, char **argv)
 {
     if (argc != 2)
-		return (1);
+	{
+        return (1);
+	}
 	char *input = argv[1];
-	
 	if (ch_balance(input) == -1)
+	{
 		return (1);
-    node *tree;
-	tree = parse_add(&input);
+	}	
+    node *tree = parse_add(&input);
     if (!tree)
-		return (1);
+	{
+        return (1);
+	}
 	if (*input)
 	{
 		unexpected(*input);
-		return (-1);
+		destroy_tree (tree);
+		return (1);
 	}
-    printf("%d\n", eval_tree(tree));
+	printf("%d\n", eval_tree(tree));
     destroy_tree(tree);
 	return (0);
 }

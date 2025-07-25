@@ -1,11 +1,11 @@
-#include <unistd.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <unistd.h>
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
 #include <sys/wait.h>
 #include <string.h>
-#include <signal.h>
 
 void alarm_handler(int sig)
 {
@@ -16,10 +16,9 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 {
 	pid_t pid;
 	int status;
-
 	struct sigaction sa;
-	sa.sa_flags = 0;
 	sa.sa_handler = alarm_handler;
+	sa.sa_flags = 0;
 	if (sigaction(SIGALRM, &sa, NULL) < 0)
 		return (-1);
 	
@@ -45,19 +44,19 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 		}
 		return (-1);
 	}
-
+	
 	if (WIFEXITED(status))
 	{
 		if (WEXITSTATUS(status) == 0)
 		{
 			if (verbose)
-				printf("Nice function!\n");
+				printf("Nice function \n");
 			return (1);
 		}
 		else
 		{
 			if (verbose)
-				printf("Bad function: exited with exit code %d\n", WEXITSTATUS(status));
+				printf("Bad function: exited with code %d\n", WEXITSTATUS(status));
 			return (0);
 		}
 	}
@@ -103,14 +102,13 @@ int main()
 	int r;
 
 	r = sandbox(nice_ft, 5, true);
-	printf("res is %d\n", r);
+	printf("r is %d\n", r);
 	r = sandbox(bad_ft_exit, 5, true);
-	printf("res is %d\n", r);
+	printf("r is %d\n", r);
 	r = sandbox(bad_ft_segfault, 5, true);
-	printf("res is %d\n", r);
+	printf("r is %d\n", r);
 	r = sandbox(bad_ft_timeout, 2, true);
-	printf("res is %d\n", r);
+	printf("r is %d\n", r);
 	r = sandbox(bad_ft_sig, 2, true);
-	printf("res is %d\n", r);
-	return (0);
+	printf("r is %d\n", r);
 }
