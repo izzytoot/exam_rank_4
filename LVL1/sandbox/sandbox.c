@@ -21,7 +21,6 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 	sa.sa_flags = 0;
 	if (sigaction(SIGALRM, &sa, NULL) < 0)
 		return (-1);
-	
 	pid = fork();
 	if (pid == -1)
 		return (-1);
@@ -30,7 +29,6 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 		f();
 		exit(0);
 	}
-
 	alarm(timeout);
 	if (waitpid(pid, &status, 0) == -1)
 	{
@@ -44,7 +42,6 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 		}
 		return (-1);
 	}
-	
 	if (WIFEXITED(status))
 	{
 		if (WEXITSTATUS(status) == 0)
@@ -60,7 +57,6 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 			return (0);
 		}
 	}
-
 	if (WIFSIGNALED(status))
 	{
 		if (verbose)
