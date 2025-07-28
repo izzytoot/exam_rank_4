@@ -153,7 +153,7 @@ int	parse_map(json *dst, FILE *stream)
 			break;
 		}
 		if (c == ',') //if , we go again
-			accept(stream, ',');
+			accept(stream, c);
 		else //error
 		{
 			unexpected(stream);
@@ -166,7 +166,7 @@ int	parse_map(json *dst, FILE *stream)
 //added
 int parser(json *dst, FILE *stream)
 {
-	int c = peek(stream); //look at next char and decide
+	char c = peek(stream); //look at next char and decide
 
 	if (c == EOF) //if EOF - print and error
 	{

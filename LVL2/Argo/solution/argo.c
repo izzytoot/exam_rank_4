@@ -35,7 +35,7 @@ int	expect(FILE *stream, char c)
 
 int parse_int(json *dst, FILE *stream)
 {
-	int n = 0;
+	int n;
 	fscanf(stream, "%d", &n);
 	dst->type = INTEGER;
 	dst->integer = n;
@@ -44,34 +44,46 @@ int parse_int(json *dst, FILE *stream)
 
 char *get_str(FILE *stream)
 {
-	char *res = calloc(4096, sizeof(char));
-	int i = 0;
 	char c = getc(stream);
+	int i = 0;
+	char *res = calloc(4096, sizeof(char));
 
 	while(1)
 	{
 		c = getc(stream);
 		if (c == '"')
 			break;
-		if (c == EOF)
+		if (c == e)
 		{
 			unexpected(stream);
 			return (NULL);
 		}
 		if (c == '\\')
+		{
 			c = getc(stream);
-		res[i++] = c;
+			if (c == EOF)
+			{
+				unexpected(stream);
+				return (NULL);
+			}
+		}	
+		res[i++] = c;		
 	}
+	res[i] = '\0';
+	if (c != '"')
+		return (NULL);
 	return (res);
 }
 
 int parse_map(json *dst, FILE *stream)
 {
 	dst->type = MAP;
-	dst->map.size = 0;
 	dst->map.data = NULL;
+	dst->map.size = 0;
 	char c = getc(stream);
 
+	if (peek(stream) == '}')
+		return (1);
 	while(1)
 	{
 		c = peek(stream);
@@ -98,7 +110,7 @@ int parse_map(json *dst, FILE *stream)
 			break;
 		}
 		if (c == ',')
-			accept (stream, c);
+			accept(stream, c);
 		else
 		{
 			unexpected(stream);

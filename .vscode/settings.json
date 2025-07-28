@@ -3,6 +3,7 @@
 		"stdlib.h": "c",
 		"errno.h": "c",
 		"string.h": "c",
-		"signal.h": "c"
+		"signal.h": "c",
+		"argo.h": "c"
 	}
 }

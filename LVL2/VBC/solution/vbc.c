@@ -26,30 +26,39 @@ void    unexpected(char c)
     if (c)
         printf("Unexpected token '%c'\n", c);
     else
-        printf("Unexpected end of input\n");
+        printf("Unexpected end of file\n");
 }
 
-int ch_balance(char *s)
+int is_allowed(char c)
 {
-	int n = 0;
-	int i = -1;
+	if (c != '+' && c != '*' && c != '(' && c != ')' && isdigit(c))
+		return(0);
+	return (1);
+}
 
-	while (s[++i])
+int prev_checks(char *s)
+{
+	int i = -1;
+	int bal = 0;
+
+	while(s[++i])
 	{
 		if (s[i] == '(')
-			n++;
-		else if (s[i] == ')')
+			bal++;
+		if (isdigit(s[i]) && (s[i + 1] && (is_allowed(s[i + 1]) == 0)))
+			return(unexpected(s[i + 1]), -1);
+		if (s[i] == ')')
 		{
-			n--;
-			if (n < 0)
-				return (printf("Unexpected token ')'\n"), -1);
+			bal--;
+			if (bal < 0)
+				return(unexpected(')'), -1);
 		}
 	}
-	if (n != 0)
-		return (printf("Unexpected token '('\n"), -1);
-	else
-		return (0);
+	if (bal != 0)
+		return(unexpected('('), -1);
+	return (0);
 }
+
 
 node *parse_nb_or_group(char **s)
 {
@@ -79,7 +88,7 @@ node *parse_nb_or_group(char **s)
 		if (!res)
 			return (NULL);
 		(*s)++;
-		return(res);
+		return (res);
 	}
 	unexpected(**s);
 	return (NULL);
@@ -94,7 +103,7 @@ node *parse_mult(char **s)
 	l = parse_nb_or_group(s);
 	if (!l)
 		return (NULL);
-	while (**s == '*')
+	while(**s == '*')
 	{
 		(*s)++;
 		r = parse_nb_or_group(s);
@@ -122,7 +131,7 @@ node *parse_add(char **s)
 	l = parse_mult(s);
 	if (!l)
 		return (NULL);
-	while (**s == '+')
+	while(**s == '+')
 	{
 		(*s)++;
 		r = parse_mult(s);
@@ -157,26 +166,20 @@ int eval_tree(node *tree)
 int main(int argc, char **argv)
 {
     if (argc != 2)
-	{
         return (1);
-	}
 	char *input = argv[1];
-	if (ch_balance(input) == -1)
-	{
+	if (prev_checks(input) != 0)
 		return (1);
-	}	
     node *tree = parse_add(&input);
     if (!tree)
-	{
         return (1);
-	}
 	if (*input)
 	{
+		destroy_tree(tree);
 		unexpected(*input);
-		destroy_tree (tree);
 		return (1);
 	}
-	printf("%d\n", eval_tree(tree));
+    printf("%d\n", eval_tree(tree));
     destroy_tree(tree);
 	return (0);
 }
