@@ -86,7 +86,7 @@ int    ft_popen(const char *file, char *const av[], char type)
         close(fd[0]); // Close unused read end
         return (fd[1]); // Return write end to write to child's input
     }
-}  
+} 
 
 int main ()
 {

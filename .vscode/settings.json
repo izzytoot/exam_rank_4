@@ -4,6 +4,10 @@
 		"errno.h": "c",
 		"string.h": "c",
 		"signal.h": "c",
-		"argo.h": "c"
+		"argo.h": "c",
+		"vbc.h": "c",
+		"stdio.h": "c",
+		"ctype.h": "c",
+		"malloc.h": "c"
 	}
 }

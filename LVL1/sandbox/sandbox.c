@@ -1,11 +1,11 @@
-#include <stdbool.h>
 #include <unistd.h>
-#include <errno.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
 #include <sys/wait.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <signal.h>
 #include <string.h>
+#include <stdio.h>
 
 void alarm_handler(int sig)
 {
@@ -14,18 +14,18 @@ void alarm_handler(int sig)
 
 int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 {
-	pid_t pid;
+	__pid_t pid;
 	int status;
 
 	struct sigaction sa;
 	sa.sa_handler = alarm_handler;
 	sa.sa_flags = 0;
 	if (sigaction(SIGALRM, &sa, NULL) < 0)
-		return (-1);
+		return -1;
 	
 	pid = fork();
 	if (pid == -1)
-		return (-1);
+		return -1;
 	if (pid == 0)
 	{
 		f();
@@ -41,9 +41,9 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 			waitpid(pid, NULL, 0);
 			if (verbose)
 				printf("Bad function: timed out after %d seconds\n", timeout);
-			return (0);
+			return 0;
 		}
-		return (-1);
+		return -1;
 	}
 
 	if (WIFEXITED(status))
@@ -52,13 +52,13 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 		{
 			if (verbose)
 				printf("Nice function!\n");
-			return (1);
+			return 1;
 		}
 		else
 		{
 			if (verbose)
 				printf("Bad function: exited with code %d\n", WEXITSTATUS(status));
-			return (0);
+			return 0;
 		}
 	}
 
@@ -66,9 +66,9 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 	{
 		if (verbose)
 			printf("Bad function: %s\n", strsignal(WTERMSIG(status)));
-		return(0);
+		return 0;
 	}
-	return (-1);
+	return -1;
 }
 
 void nice_ft()
@@ -81,7 +81,7 @@ void bad_ft_exit()
 	exit(1);
 }
 
-void bad_ft_segf()
+void bad_ft_segfault()
 {
 	char *str = NULL;
 	str[2] = 'a';
@@ -103,19 +103,15 @@ int main()
 	int r;
 
 	r = sandbox(nice_ft, 5, true);
-	perror("nice ft");
 	printf("res is %d\n", r);
 	r = sandbox(bad_ft_exit, 5, true);
-	perror("bad ft exit");
 	printf("res is %d\n", r);
-	r = sandbox(bad_ft_segf, 5, true);
-	perror("bad ft segfault");
+	r = sandbox(bad_ft_segfault, 5, true);
 	printf("res is %d\n", r);
-	r = sandbox(bad_ft_timeout, 2, true);
-	perror("bad ft timeout");
+	r = sandbox(bad_ft_timeout, 1, true);
 	printf("res is %d\n", r);
 	r = sandbox(bad_ft_sig, 2, true);
-	perror("bad ft signal");
 	printf("res is %d\n", r);
-	return (0);
+
+	return 0;
 }

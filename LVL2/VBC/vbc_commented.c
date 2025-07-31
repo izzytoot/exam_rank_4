@@ -53,23 +53,27 @@ void    unexpected(char c) //handling syntax errors
 // }
 
 //my input from here onwards
-int	ch_balance(char *s) //looks for imbalanced number of parethisis
+int	prev_checks(char *s) //looks for imbalanced number of parethisis or ints > 9
 {
-	int balance = 0;
 	int i = -1;
+	int bal = 0;
 
-	while (s[++i])
+	while(s[++i])
 	{
-		if (s[i] == '(') // +1 for each (
-			balance++;
-		else if(s[i] == ')') // -1 for each (
+		if (s[i] == '(')
+			bal++;
+		if (isdigit(s[i]) && (s[i + 1] && (is_allowed(s[i + 1]) == 0)))
+			return(unexpected(s[i + 1]), -1);
+		if (s[i] == ')')
 		{
-			balance--;
-			if (balance < 0) //if less than 0 - imbalanced parenthisis
-				return (-1);
+			bal--;
+			if (bal < 0)
+				return(unexpected(')'), -1);
 		}
 	}
-	return (balance);
+	if (bal != 0)
+		return(unexpected('('), -1);
+	return (0);
 }
 
 node	*parse_nb_or_group(char **s) //base case - checks if we have a number or a grouped expression
