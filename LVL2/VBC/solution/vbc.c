@@ -166,13 +166,13 @@ int eval_tree(node *tree)
 int main(int argc, char **argv)
 {
     if (argc != 2)
-        return (1);
+		return (1);
 	char *input = argv[1];
 	if (prev_checks(input) != 0)
 		return (1);
     node *tree = parse_add(&input);
     if (!tree)
-        return (1);
+		return (1);
 	if (*input)
 	{
 		destroy_tree(tree);

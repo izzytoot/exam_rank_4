@@ -42,12 +42,22 @@ int    picoshell(char **cmds[])
 	int status = 0; 
 	int fd_stdin = 0; //stdin to return to after each loop
 
+	fd[0] = -1;
+	fd[1] = -1;
 	while (cmds[++i]) //looping over each cmd
 	{
 		if (cmds[i + 1]) //if not last cmd
 		{
 			if (pipe(fd) == -1) //perform pipe. 
+			{
+				if (fd[0] >= 0)
+					close(fd[0]);
+				if (fd[1] >= 0)
+					close(fd[1]);
+				if (fd_stdin > 0)
+					close(fd_stdin);
 				return (1); //if error return
+			}
 		}
 		else //identify last loop
 		{
@@ -57,11 +67,11 @@ int    picoshell(char **cmds[])
 		pid = fork(); //create new child process
 		if (pid == -1) //if error, close fds and return
 		{
-			if (fd[0] != -1) //check if open
+			if (fd[0] >= 0) //check if open
 				close(fd[0]);
-			if (fd[1] != -1) //check if open
+			if (fd[0] >= 0) //check if open
 				close(fd[1]);
-			if (fd_stdin != 0) //check if changed
+			if (fd_stdin > 0) //check if changed
 				close(fd_stdin);
 			return (1);
 		}
@@ -71,30 +81,45 @@ int    picoshell(char **cmds[])
 			{
 				if (dup2(fd_stdin, 0) == -1) //stdin becomes previous cmd's output
 					exit(1);
+				if (fd_stdin > 0)
 				close (fd_stdin);
 			}
 			if (fd[1] != -1) //if not last cmd
 			{
 				if (dup2(fd[1], 1) == -1) //stdout becomes pipe's write end (fd[1])
 					exit(1);
-				close(fd[1]);
-				close(fd[0]);
+				if (fd[0] >= 0)
+					close(fd[0]);
+				if (fd[1] >= 0)
+					close(fd[1]);
 			}
 			execvp(cmds[i][0], cmds[i]); //exec cmd and args
 			exit(1); //in case execvp fails
 		}
-		if (fd_stdin != 0) //if prev cmd
+		if (fd_stdin > 0) //if prev cmd
 			close(fd_stdin); // we don't need stdin from prev cmd anymore
-		if (fd[1] != -1) //if write end open
+		if (fd[1] >= -1) //if write end open
 			close(fd[1]); //close it
 		fd_stdin = fd[0]; //save the read end for the next cmd
 	}
 	while (wait(&status) > 0) //while all children are finishing we wait
 	{
 		if (WIFEXITED(status) && WEXITSTATUS(status) != 0) //if it exited with a non-0 status (error)
+		{
 			res = 1;
+			break ;
+		}
 		else if (!WIFEXITED(status)) //if it didn't exit normally
+		{
 			res = 1;
+			break ;
+		}
+		if (fd[0] >= 0)
+			close(fd[0]);
+		if (fd[1] >= 0)
+			close(fd[1]);
+		if (fd_stdin > 0)
+			close(fd_stdin);
 	}
 	return (res); //0 if success, 1 if error
 }

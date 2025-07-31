@@ -53,7 +53,7 @@ char *get_str(FILE *stream)
 		c = getc(stream);
 		if (c == '"')
 			break;
-		if (c == e)
+		if (c == EOF)
 		{
 			unexpected(stream);
 			return (NULL);
