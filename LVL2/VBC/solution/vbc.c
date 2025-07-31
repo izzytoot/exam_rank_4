@@ -29,38 +29,39 @@ void    unexpected(char c)
         printf("Unexpected end of file\n");
 }
 
-int is_allowed(char c)
+int 	prev_checks(char *s)
 {
-	if (c != '+' && c != '*' && c != '(' && c != ')' && isdigit(c))
-		return(0);
-	return (1);
-}
-
-int prev_checks(char *s)
-{
-	int i = -1;
 	int bal = 0;
-
-	while(s[++i])
+	int i = -1;
+	
+	while (s[++i])
 	{
 		if (s[i] == '(')
 			bal++;
-		if (isdigit(s[i]) && (s[i + 1] && (is_allowed(s[i + 1]) == 0)))
-			return(unexpected(s[i + 1]), -1);
-		if (s[i] == ')')
+		if (isdigit(s[i]) && (s[i + 1] && isdigit(s[i + 1])))
+		{
+			unexpected(s[i + 1]);
+			return -1;
+		}
+		if(s[i] == ')')
 		{
 			bal--;
 			if (bal < 0)
-				return(unexpected(')'), -1);
+			{
+				printf("Unexpected token ')'\n");
+				return -1;
+			}
 		}
 	}
 	if (bal != 0)
-		return(unexpected('('), -1);
-	return (0);
+	{
+		printf("Unexpected token '('\n");
+		return -1;
+	}
+	return 0;
 }
 
-
-node *parse_nb_or_group(char **s)
+node 	*parse_nb_or_group(char **s)
 {
 	node *res;
 	node tmp;
@@ -70,15 +71,15 @@ node *parse_nb_or_group(char **s)
 		(*s)++;
 		res = parse_add(s);
 		if (!res)
-			return (NULL);
+			return NULL;
 		if (**s != ')')
 		{
-			destroy_tree(res);
 			unexpected(**s);
-			return (NULL);
+			destroy_tree(res);
+			return NULL;
 		}
 		(*s)++;
-		return (res);
+		return res;
 	}
 	if (isdigit(**s))
 	{
@@ -86,23 +87,23 @@ node *parse_nb_or_group(char **s)
 		tmp.val = **s - '0';
 		res = new_node(tmp);
 		if (!res)
-			return (NULL);
+			return NULL;
 		(*s)++;
-		return (res);
+		return res;
 	}
 	unexpected(**s);
-	return (NULL);
+	return NULL;
 }
 
-node *parse_mult(char **s)
+node 	*parse_mult(char **s)
 {
 	node *l;
 	node *r;
 	node tmp;
 
 	l = parse_nb_or_group(s);
-	if (!l)
-		return (NULL);
+	if(!l)
+		return NULL;
 	while(**s == '*')
 	{
 		(*s)++;
@@ -110,27 +111,27 @@ node *parse_mult(char **s)
 		if (!r)
 		{
 			destroy_tree(l);
-			return (NULL);
+			return NULL;
 		}
 		tmp.type = MULTI;
 		tmp.l = l;
 		tmp.r = r;
 		l = new_node(tmp);
 		if (!l)
-			return (NULL);
+			return NULL;
 	}
 	return (l);
 }
 
-node *parse_add(char **s)
+node 	*parse_add(char **s)
 {
 	node *l;
 	node *r;
 	node tmp;
 
 	l = parse_mult(s);
-	if (!l)
-		return (NULL);
+	if(!l)
+		return NULL;
 	while(**s == '+')
 	{
 		(*s)++;
@@ -138,14 +139,14 @@ node *parse_add(char **s)
 		if (!r)
 		{
 			destroy_tree(l);
-			return (NULL);
+			return NULL;
 		}
 		tmp.type = ADD;
 		tmp.l = l;
 		tmp.r = r;
 		l = new_node(tmp);
 		if (!l)
-			return (NULL);
+			return NULL;
 	}
 	return (l);
 }
@@ -168,16 +169,16 @@ int main(int argc, char **argv)
     if (argc != 2)
 		return (1);
 	char *input = argv[1];
-	if (prev_checks(input) != 0)
-		return (1);
+	if (prev_checks(input) == -1)
+		return 1;
     node *tree = parse_add(&input);
     if (!tree)
 		return (1);
 	if (*input)
 	{
-		destroy_tree(tree);
 		unexpected(*input);
-		return (1);
+		destroy_tree(tree);
+		return 1;
 	}
     printf("%d\n", eval_tree(tree));
     destroy_tree(tree);
