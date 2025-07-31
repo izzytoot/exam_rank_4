@@ -29,8 +29,6 @@ int ft_popen(const char *file, char *const argv[], char type)
 			if (dup2(fd[0], 0) == -1)
 				exit(1);
 		}
-		close(fd[0]);
-		close(fd[1]);
 		execvp(file, argv);
 		exit(1);
 	}
@@ -49,7 +47,7 @@ int ft_popen(const char *file, char *const argv[], char type)
 int main()
 {
 	int fd_ls = ft_popen("ls", (char *const[]){"ls", NULL}, 'r');
-	int fd_grep = ft_popen("grep", (char *const[]){"grep", "a", NULL}, 'w');
+	int fd_grep = ft_popen("grep", (char *const[]){"grep", "p", NULL}, 'w');
 	int bytes;
 	char buffer[1024];
 

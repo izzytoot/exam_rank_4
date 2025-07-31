@@ -1,16 +1,16 @@
 #include <unistd.h>
 #include <stdlib.h>
-#include <sys/wait.h>
 #include <stdio.h>
+#include <sys/wait.h>
 
 int    picoshell(char **cmds[])
 {
-	int fd[2] = {-1, -1};
 	pid_t pid;
+	int fd[2] = {-1, -1};
 	int status;
 	int fd_stdin = 0;
-	int i = -1;
 	int res = 0;
+	int i = -1;
 
 	if (!cmds)
 		return 1;
@@ -26,7 +26,7 @@ int    picoshell(char **cmds[])
 					close(fd[1]);
 				if (fd_stdin > 0)
 					close(fd_stdin);
-				return -1;
+				return 1;
 			}
 		}
 		else
@@ -43,14 +43,14 @@ int    picoshell(char **cmds[])
 				close(fd[1]);
 			if (fd_stdin > 0)
 				close(fd_stdin);
-			return -1;
+			return 1;
 		}
 		if (pid == 0)
 		{
 			if (fd[1] >= 0)
 			{
 				if (dup2(fd[1], 1) == -1)
-					exit (1);
+					exit(1);
 				if (fd[1] >= 0)
 					close(fd[1]);
 				if (fd[0] >= 0)
@@ -64,7 +64,7 @@ int    picoshell(char **cmds[])
 					close(fd_stdin);
 			}
 			execvp(cmds[i][0], cmds[i]);
-			exit(1);			
+			exit(1);
 		}
 		if (fd[1] >= 0)
 			close(fd[1]);
@@ -74,17 +74,23 @@ int    picoshell(char **cmds[])
 	}
 	while(wait(&status) > 0)
 	{
-		if (WIFEXITED(status) && (WEXITSTATUS(status) != 0))
-		{
-			res = 1;
-			break;
-		}
 		if (!WIFEXITED(status))
 		{
 			res = 1;
 			break;
 		}
+		else if (WIFEXITED(status) && ((WEXITSTATUS(status) != 0)))
+		{
+			res = 1;
+			break;
+		}
 	}
+	if (fd[0] >= 0)
+		close(fd[0]);
+	if (fd[1] >= 0)
+		close(fd[1]);
+	if (fd_stdin > 0)
+		close(fd_stdin);
 	return (res);
 }
 
@@ -97,12 +103,11 @@ int main()
 	// char *cmd5[] = {"ola", NULL};
 	char **cmds[] = {cmd1, cmd2, cmd3, NULL};
 	// char **cmds[] = {cmd5, NULL};
-	int r;
+	int r = picoshell(cmds);
 
-	r = picoshell(cmds);
 	if (r)
 		perror("pico failure");
 	else
-		printf("pico success :)\n");
-	return 0;	
+		printf("pico success :)");
+	return 0;
 }

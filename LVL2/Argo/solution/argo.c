@@ -45,8 +45,8 @@ int parse_int(json *dst, FILE *stream)
 char *get_str(FILE *stream)
 {
 	char *res = calloc(3096, sizeof(char));
-	char c = getc(stream);
 	int i = 0;
+	char c = getc(stream);
 
 	while(1)
 	{
@@ -62,7 +62,7 @@ char *get_str(FILE *stream)
 			c = getc(stream);
 		res[i++] = c;
 	}
-	return res;
+	return (res);
 }
 
 int parse_map(json *dst, FILE *stream)
@@ -72,7 +72,7 @@ int parse_map(json *dst, FILE *stream)
 	dst->map.data = NULL;
 	dst->map.size = 0;
 
-	if (peek("}"))
+	if (c == '}')
 		return 1;
 	while(1)
 	{
@@ -92,7 +92,7 @@ int parse_map(json *dst, FILE *stream)
 		if (argo(&curr->value, stream) == -1)
 			return -1;
 		dst->map.size++;
-
+		
 		c = peek(stream);
 		if (c == '}')
 		{
