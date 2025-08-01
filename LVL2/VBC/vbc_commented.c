@@ -32,7 +32,7 @@ void    unexpected(char c) //handling syntax errors
         printf("Unexpected end of input\n"); //changed file to input to agree with sbject
 }
 
-//given
+//given but not used
 // int accept(char **s, char c) //not used in my version
 // {
 //     if (**s == c) //changed if (**s) to if(**s == c)
@@ -43,7 +43,7 @@ void    unexpected(char c) //handling syntax errors
 //     return (0);
 // }
 
-// //given
+// //given but not used
 // int expect(char **s, char c) //not used in my version
 // {
 //     if (accept(s, c))
@@ -53,27 +53,28 @@ void    unexpected(char c) //handling syntax errors
 // }
 
 //my input from here onwards
-int	prev_checks(char *s) //looks for imbalanced number of parethisis or ints > 9
-{
-	int i = -1;
-	int bal = 0;
 
-	while(s[++i])
+int		prev_check(char *s)//looks for imbalanced number of parethisis or ints > 9
+{
+	int bal = 0;
+	int i = -1;
+
+	while (s[++i])
 	{
-		if (s[i] == '(')
+		if (s[i] == '(') //nb of (
 			bal++;
-		if (isdigit(s[i]) && (s[i + 1] && (is_allowed(s[i + 1]) == 0)))
-			return(unexpected(s[i + 1]), -1);
-		if (s[i] == ')')
+		else if (s[i] == ')') //nb of )
 		{
 			bal--;
 			if (bal < 0)
 				return(unexpected(')'), -1);
 		}
+		if (isdigit(s[i]) && (s[i + 1] && isdigit(s[i + 1]))) //> 9
+			return (unexpected(s[i + 1]), -1);
 	}
 	if (bal != 0)
-		return(unexpected('('), -1);
-	return (0);
+		return (unexpected('('), -1);
+	return 0;
 }
 
 node	*parse_nb_or_group(char **s) //base case - checks if we have a number or a grouped expression
@@ -81,18 +82,20 @@ node	*parse_nb_or_group(char **s) //base case - checks if we have a number or a 
 	node	*res = NULL; //final result
 	node	tmp; //tmp to turn into node
 
-	if(**s == '(') //checks for grouped expression (like (3+4*5))
+	if (**s == '(')  //checks for grouped expression (like (3+4*5))
 	{
 		(*s)++; //moves past the '('
 		res = parse_add(s); //addition is top level operator - first call
-		if(!res || **s != ')') //if NULL or there wasn't a closing ')' -> error
+		if (!res) //if fail, return null
+			return NULL;
+		if (**s != ')') //if there wasn't a closing ')' -> error
 		{
-			destroy_tree(res); //cleans
 			unexpected(**s); //prints error
-			return (NULL); //exit
+			destroy_tree(res); //cleans
+			return NULL; //exit
 		}
 		(*s)++; //moves passed the closing ')'
-		return (res); //returns the subtree built for what is inside the ()
+		return res;  //returns the subtree built for what is inside the ()
 	}
 	if (isdigit(**s)) //if digit between 0 and 9
 	{
@@ -130,6 +133,8 @@ node	*parse_mult(char **s)
 		tmp.l = l; //attribute left
 		tmp.r = r; //attribute right
 		l = new_node(tmp); //store in k to continue left-associative chaiining - eg. 2*3*4 becomes MULTI(MULTI(2, 3), 4)
+		if (!l)
+			return NULL;
 	}
 	return (l); //return new node
 }
@@ -156,6 +161,8 @@ node	*parse_add(char **s)
 		tmp.l = l; //attribute left
 		tmp.r = r; //attribute right
 		l = new_node(tmp); //create new node and store in left -> 1+2+3 → ADD(ADD(1,2),3)
+		if (!l)
+			return NULL;
 	}
 	return (l); //return new node
 }
@@ -178,22 +185,24 @@ int eval_tree(node *tree) //to perform the operation
 //given
 int main(int argc, char **argv)
 {
-	char *input = argv[1]; //added
-	node *tree;
-
 	if (argc != 2)
         return (1);
-	if (ch_balance(argv[1]) == -1) //added //if -1, too many )
+
+	char *input = argv[1]; //added
+	if (ch_balance(input) == -1) //added //if -1, too many )
 		return (printf("Unexpected token ')'\n"), 1); //added
-	tree = parse_add(&input); //changed argv[1] to &input
+	
+	node *tree = parse_add(&input); //changed argv[1] to &input
 	if (!tree)
         return (1);
+	
 	if (*input) // to check if there is any symbols after the operation (like '3+5x')
 	{
 		unexpected(*input); //print error
 		destroy_tree(tree); //clean 
 		return (1);
 	}
-    printf("%d\n", eval_tree(tree)); //print result
+    
+	printf("%d\n", eval_tree(tree)); //print result
     destroy_tree(tree); //clean
 }

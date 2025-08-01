@@ -35,5 +35,10 @@ int		peek(FILE *stream);
 void	unexpected(FILE *stream);
 int		accept(FILE *stream, char c);
 int		expect(FILE *stream, char c);
+int 	parse_int(json *dst, FILE *stream);
+char 	*get_str(FILE *stream);
+int 	parse_map(json *dst, FILE *stream);
+int 	parser(json *dst, FILE *stream);
+int		argo(json *dst, FILE *stream);
 
 #endif

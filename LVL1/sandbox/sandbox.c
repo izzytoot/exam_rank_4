@@ -1,11 +1,11 @@
-#include <unistd.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/wait.h>
-#include <signal.h>
 #include <stdbool.h>
+#include <errno.h>
+#include <sys/wait.h>
 #include <string.h>
+#include <signal.h>
+#include <unistd.h>
 
 void alarm_handler(int sig)
 {
@@ -20,7 +20,7 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 	struct sigaction sa;
 	sa.sa_handler = alarm_handler;
 	sa.sa_flags = 0;
-	if(sigaction(SIGALRM, &sa, NULL) < 0)
+	if (sigaction(SIGALRM, &sa, NULL) < 0)
 		return -1;
 	
 	pid = fork();
@@ -31,7 +31,7 @@ int	sandbox(void (*f)(void), unsigned int timeout, bool verbose)
 		f();
 		exit(0);
 	}
-
+	
 	alarm(timeout);
 	if (waitpid(pid, &status, 0) == -1)
 	{
@@ -102,7 +102,7 @@ void bad_ft_sigkill()
 int main()
 {
 	int r;
-	
+
 	r = sandbox(nice_ft, 5, true);
 	printf("res is %d\n", r);
 	r = sandbox(bad_ft_exit, 5, true);
@@ -113,6 +113,5 @@ int main()
 	printf("res is %d\n", r);
 	r = sandbox(bad_ft_sigkill, 1, true);
 	printf("res is %d\n", r);
-
 	return 0;
 }

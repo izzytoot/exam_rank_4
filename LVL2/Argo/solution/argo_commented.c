@@ -92,8 +92,8 @@ int parse_int(json *dst, FILE *stream)
 char *get_str(FILE *stream)
 {
 	char *res = calloc(4096, sizeof(char));
-	int i = 0;
 	char c = getc(stream); //gets 1st char (str[0])
+	int i = 0;
 
 	while (1) //loop until "
 	{
@@ -134,7 +134,7 @@ int	parse_map(json *dst, FILE *stream)
 			return (-1); //returns -1 for error
 		}
 		//reallocate memory for data each loop round (map.size+1*sizeof(pair))
-		dst->map.data = realloc(dst->map.data, (dst->map.size + 1) * sizeof(pair));
+		dst->map.data = realloc(dst->map.data, ((dst->map.size + 1) * sizeof(pair)));
 		pair *curr = &dst->map.data[dst->map.size]; //initiate a new pair at map.size
 		curr->key = get_str(stream); //key is 1st str - get_str
 		if (!curr->key)
@@ -190,7 +190,6 @@ int parser(json *dst, FILE *stream)
 		unexpected(stream); //print error
 		return (-1);
 	}
-	return (1);
 }
 
 int		argo(json *dst, FILE *stream)

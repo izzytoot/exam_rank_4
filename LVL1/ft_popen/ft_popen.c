@@ -3,8 +3,8 @@
 
 int ft_popen(const char *file, char *const argv[], char type)
 {
-	int fd[2];
 	__pid_t pid;
+	int fd[2];
 
 	if (!file || !argv || (type != 'r' && type != 'w'))
 		return -1;
@@ -19,7 +19,7 @@ int ft_popen(const char *file, char *const argv[], char type)
 	}
 	if (pid == 0)
 	{
-		if (type == 'r')
+		if(type == 'r')
 		{
 			if (dup2(fd[1], 1) == -1)
 				exit(1);
@@ -29,6 +29,8 @@ int ft_popen(const char *file, char *const argv[], char type)
 			if (dup2(fd[0], 0) == -1)
 				exit(1);
 		}
+		close(fd[0]);
+		close(fd[1]);
 		execvp(file, argv);
 		exit(1);
 	}
@@ -48,12 +50,12 @@ int main()
 {
 	int fd_ls = ft_popen("ls", (char *const[]){"ls", NULL}, 'r');
 	int fd_grep = ft_popen("grep", (char *const[]){"grep", "p", NULL}, 'w');
-	int bytes;
 	char buffer[1024];
+	int bytes;
 
-	if (fd_ls == -1 || fd_grep == -1)
+	if (fd_grep == -1 || fd_ls == -1)
 		return 1;
-	while((bytes = read(fd_ls, buffer, 1024)) > 0)
+	while ((bytes = read(fd_ls, buffer, 1024)) > 0)
 		write(fd_grep, buffer, bytes);
 	close(fd_ls);
 	close(fd_grep);

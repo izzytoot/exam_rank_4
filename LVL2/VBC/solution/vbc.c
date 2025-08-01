@@ -26,35 +26,49 @@ void    unexpected(char c)
     if (c)
         printf("Unexpected token '%c'\n", c);
     else
-        printf("Unexpected end of input\n");
+        printf("Unexpected end of file\n");
 }
 
-int		prev_checks(char *s)
+
+int eval_tree(node *tree)
+{
+    switch (tree->type)
+    {
+        case ADD:
+            return (eval_tree(tree->l) + eval_tree(tree->r));
+        case MULTI:
+            return (eval_tree(tree->l) * eval_tree(tree->r));
+        case VAL:
+            return (tree->val);
+    }
+}
+
+int		prev_check(char *s)
 {
 	int bal = 0;
 	int i = -1;
 
-	while(s[++i])
+	while (s[++i])
 	{
 		if (s[i] == '(')
 			bal++;
-		if (isdigit(s[i]) && (s[i + 1] && isdigit(s[i + 1])))
-			return (unexpected(s[i + 1]), -1);
-		if (s[i] == ')')
+		else if (s[i] == ')')
 		{
 			bal--;
-			if(bal < 0)
-				return (unexpected(')'), -1);
+			if (bal < 0)
+				return(unexpected(')'), -1);
 		}
+		if (isdigit(s[i]) && (s[i + 1] && isdigit(s[i + 1])))
+			return (unexpected(s[i + 1]), -1);
 	}
 	if (bal != 0)
-		return(unexpected('('), -1);
+		return (unexpected('('), -1);
 	return 0;
 }
 
 node	*parse_nb_or_group(char **s)
 {
-	node *res;
+	node *res = NULL;
 	node tmp;
 
 	if (**s == '(')
@@ -70,7 +84,7 @@ node	*parse_nb_or_group(char **s)
 			return NULL;
 		}
 		(*s)++;
-		return (res);
+		return res;
 	}
 	if (isdigit(**s))
 	{
@@ -80,7 +94,7 @@ node	*parse_nb_or_group(char **s)
 		if (!res)
 			return NULL;
 		(*s)++;
-		return (res);
+		return res;
 	}
 	unexpected(**s);
 	return NULL;
@@ -111,10 +125,10 @@ node	*parse_mult(char **s)
 		if (!l)
 			return NULL;
 	}
-	return l;	
+	return l;
 }
 
-node	*parse_add(char **s)
+node 	*parse_add(char **s)
 {
 	node *l;
 	node *r;
@@ -142,36 +156,23 @@ node	*parse_add(char **s)
 	return l;
 }
 
-int eval_tree(node *tree)
-{
-    switch (tree->type)
-    {
-        case ADD:
-            return (eval_tree(tree->l) + eval_tree(tree->r));
-        case MULTI:
-            return (eval_tree(tree->l) * eval_tree(tree->r));
-        case VAL:
-            return (tree->val);
-    }
-}
-
 int main(int argc, char **argv)
 {
     if (argc != 2)
 		return (1);
 	char *input = argv[1];
-	if (prev_checks(input) == -1)
-		return -1;
-    node *tree = parse_add(&input);
-    if (!tree)
+	if (prev_check(input) == -1)
+		return 1;
+	node *tree = parse_add(&input);
+	if (!tree)
 		return (1);
 	if (*input)
 	{
 		unexpected(*input);
 		destroy_tree(tree);
-		return -1;
+		return 1;
 	}
-    printf("%d\n", eval_tree(tree));
-    destroy_tree(tree);
+	printf("%d\n", eval_tree(tree));
+	destroy_tree(tree);
 	return (0);
 }

@@ -69,7 +69,7 @@ int    picoshell(char **cmds[])
 		{
 			if (fd[0] >= 0) //check if open
 				close(fd[0]);
-			if (fd[0] >= 0) //check if open
+			if (fd[1] >= 0) //check if open
 				close(fd[1]);
 			if (fd_stdin > 0) //check if changed
 				close(fd_stdin);
@@ -98,7 +98,7 @@ int    picoshell(char **cmds[])
 		}
 		if (fd_stdin > 0) //if prev cmd
 			close(fd_stdin); // we don't need stdin from prev cmd anymore
-		if (fd[1] >= -1) //if write end open
+		if (fd[1] >= 0) //if write end open
 			close(fd[1]); //close it
 		fd_stdin = fd[0]; //save the read end for the next cmd
 	}
@@ -114,13 +114,13 @@ int    picoshell(char **cmds[])
 			res = 1;
 			break ;
 		}
-		if (fd[0] >= 0)
-			close(fd[0]);
-		if (fd[1] >= 0)
-			close(fd[1]);
-		if (fd_stdin > 0)
-			close(fd_stdin);
 	}
+	if (fd[0] >= 0)
+		close(fd[0]);
+	if (fd[1] >= 0)
+		close(fd[1]);
+	if (fd_stdin > 0)
+		close(fd_stdin);
 	return (res); //0 if success, 1 if error
 }
 
