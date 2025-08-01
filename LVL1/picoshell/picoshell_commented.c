@@ -102,18 +102,12 @@ int    picoshell(char **cmds[])
 			close(fd[1]); //close it
 		fd_stdin = fd[0]; //save the read end for the next cmd
 	}
-	while (wait(&status) > 0) //while all children are finishing we wait
+	if (waitpid(pid, &status, NULL) == -1) //while all children are finishing we wait
 	{
 		if (WIFEXITED(status) && WEXITSTATUS(status) != 0) //if it exited with a non-0 status (error)
-		{
 			res = 1;
-			break ;
-		}
 		else if (!WIFEXITED(status)) //if it didn't exit normally
-		{
 			res = 1;
-			break ;
-		}
 	}
 	if (fd[0] >= 0)
 		close(fd[0]);

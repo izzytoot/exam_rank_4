@@ -72,18 +72,12 @@ int picoshell(char **cmds[])
 			close(fd_std);
 		fd_std = fd[0];
 	}
-	while(wait(&status) > 0)
+	if(waitpid(pid, &status, 0) == -1)
 	{
 		if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
-		{
 			res = 1;
-			break;
-		}
 		if (!WIFEXITED(status))
-		{
 			res = 1;
-			break;
-		}
 	}
 	if (fd[0] >= 0)
 		close(fd[0]);
